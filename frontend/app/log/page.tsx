@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { getExercises, createWorkout, type Exercise } from "@/lib/api";
+import { useUser } from "@/context/UserContext";
 
 const CATEGORIES = ["Push", "Pull", "Legs", "Cardio", "Full Body", "Core"];
 
 export default function LogPage() {
+  const { userId } = useUser();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [form, setForm] = useState({
     logged_on: "",
@@ -42,7 +44,7 @@ export default function LogPage() {
     if (!form.exercise || !form.category) return;
     setStatus("saving");
     try {
-      await createWorkout(form);
+      await createWorkout({ ...form, user_id: userId });
       setStatus("saved");
       setForm((f) => ({ ...f, notes: "" })); // reset notes only
       setTimeout(() => setStatus("idle"), 2500);
@@ -56,7 +58,12 @@ export default function LogPage() {
 
   return (
     <div className="max-w-xl space-y-6">
-      <h1 className="text-2xl font-bold">Log Workout</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Log Workout</h1>
+        <span className="text-xs font-mono px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold">
+          Athlete #{userId}
+        </span>
+      </div>
 
       <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
         {/* Date */}

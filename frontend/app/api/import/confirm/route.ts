@@ -39,13 +39,15 @@ export async function POST(request: NextRequest) {
     const text = await file.text();
     const rows = parseCSV(text);
 
+    const userId = (formData.get('user_id') as string) || '101';
+
     let inserted = 0;
     for (const r of rows) {
       if (r.exercise && r.category && r.sets > 0 && r.reps > 0 && r.weight_kg >= 0) {
         await query(
-          `INSERT INTO workouts (logged_on, exercise, category, sets, reps, weight_kg, notes)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [r.logged_on, r.exercise, r.category, r.sets, r.reps, r.weight_kg, r.notes]
+          `INSERT INTO workouts (user_id, logged_on, exercise, category, sets, reps, weight_kg, notes)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [userId, r.logged_on, r.exercise, r.category, r.sets, r.reps, r.weight_kg, r.notes]
         );
         inserted++;
       }

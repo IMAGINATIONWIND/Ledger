@@ -23,23 +23,47 @@ export const createWorkout = (body: WorkoutCreatePayload) =>
 export const deleteWorkout = (id: number) =>
   apiFetch<void>(`/workouts/${id}`, { method: "DELETE" });
 
+export const resetUserHistory = (userId: string, confirmationId: string) =>
+  apiFetch<{ success: boolean; deleted_count: number; message: string }>("/workouts/reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId, confirmation_id: confirmationId }),
+  });
+
 export const getExercises = () =>
   apiFetch<Exercise[]>("/workouts/exercises");
 
-// ---------- Stats ----------
-export const getWeeklyVolume    = () => apiFetch<WeeklyStat[]>("/stats/weekly");
-export const getMonthlyVolume   = () => apiFetch<MonthlyStat[]>("/stats/monthly");
-export const getPersonalRecords = () => apiFetch<PR[]>("/stats/prs");
-export const getCategoryBreakdown = () => apiFetch<CategoryStat[]>("/stats/category-breakdown");
-export const getRecentSessions  = () => apiFetch<RecentSession[]>("/stats/recent-sessions");
-export const getStreak          = () => apiFetch<StreakRow[]>("/stats/streak");
-export const getWeekOverWeek    = () => apiFetch<WoWStat[]>("/stats/week-over-week");
-export const getProgression     = (exercise: string) =>
-  apiFetch<ProgressionRow[]>(`/stats/progression/${encodeURIComponent(exercise)}`);
+// ---------- Stats (Parametrized by User ID) ----------
+export const getWeeklyVolume = (userId: string = "101") =>
+  apiFetch<WeeklyStat[]>(`/stats/weekly?user_id=${encodeURIComponent(userId)}`);
+
+export const getMonthlyVolume = (userId: string = "101") =>
+  apiFetch<MonthlyStat[]>(`/stats/monthly?user_id=${encodeURIComponent(userId)}`);
+
+export const getPersonalRecords = (userId: string = "101") =>
+  apiFetch<PR[]>(`/stats/prs?user_id=${encodeURIComponent(userId)}`);
+
+export const getCategoryBreakdown = (userId: string = "101") =>
+  apiFetch<CategoryStat[]>(`/stats/category-breakdown?user_id=${encodeURIComponent(userId)}`);
+
+export const getRecentSessions = (userId: string = "101") =>
+  apiFetch<RecentSession[]>(`/stats/recent-sessions?user_id=${encodeURIComponent(userId)}`);
+
+export const getStreak = (userId: string = "101") =>
+  apiFetch<StreakRow[]>(`/stats/streak?user_id=${encodeURIComponent(userId)}`);
+
+export const getWeekOverWeek = (userId: string = "101") =>
+  apiFetch<WoWStat[]>(`/stats/week-over-week?user_id=${encodeURIComponent(userId)}`);
+
+export const getProgression = (exercise: string, userId: string = "101") =>
+  apiFetch<ProgressionRow[]>(
+    `/stats/progression/${encodeURIComponent(exercise)}?user_id=${encodeURIComponent(userId)}`
+  );
 
 // ---------- Types ----------
 export interface WorkoutRow {
   id: number;
+  user_id: string;
   logged_on: string;
   exercise: string;
   category: string;
@@ -50,6 +74,7 @@ export interface WorkoutRow {
 }
 
 export interface WorkoutCreatePayload {
+  user_id?: string;
   logged_on?: string;
   exercise: string;
   category: string;
@@ -63,9 +88,13 @@ export interface Exercise {
   name: string;
   muscle_group: string;
   is_compound: boolean;
+  primary_muscle?: string;
+  secondary_muscles?: string;
+  anatomy_details?: string;
 }
 
 export interface WeeklyStat {
+  user_id?: string;
   week_start: string;
   total_volume_kg: number;
   days_trained: number;
@@ -73,6 +102,7 @@ export interface WeeklyStat {
 }
 
 export interface MonthlyStat {
+  user_id?: string;
   month_start: string;
   month_label: string;
   total_volume_kg: number;
@@ -81,12 +111,14 @@ export interface MonthlyStat {
 }
 
 export interface PR {
+  user_id?: string;
   exercise: string;
   pr_weight_kg: number;
   pr_date: string;
 }
 
 export interface CategoryStat {
+  user_id?: string;
   category: string;
   total_volume_kg: number;
   total_sets: number;
@@ -94,6 +126,7 @@ export interface CategoryStat {
 }
 
 export interface RecentSession {
+  user_id?: string;
   logged_on: string;
   exercises_done: string;
   total_sets: number;
@@ -117,5 +150,6 @@ export interface WoWStat {
 export interface ProgressionRow {
   logged_on: string;
   max_weight_kg: number;
+  session_volume_kg?: number;
   moving_avg_7d: number;
 }

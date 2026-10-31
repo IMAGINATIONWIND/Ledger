@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { getWorkouts, deleteWorkout, getExercises, type WorkoutRow, type Exercise } from "@/lib/api";
+import { useUser } from "@/context/UserContext";
 
 export default function HistoryPage() {
+  const { userId } = useUser();
   const [rows, setRows]         = useState<WorkoutRow[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filterEx, setFilterEx]  = useState("");
   const [loading, setLoading]    = useState(true);
 
   const load = async () => {
-    const params: Record<string, string> = {};
+    setLoading(true);
+    const params: Record<string, string> = { user_id: userId };
     if (filterEx) params.exercise = filterEx;
     const data = await getWorkouts(params);
     setRows(data);
@@ -21,7 +24,7 @@ export default function HistoryPage() {
     getExercises().then(setExercises);
   }, []);
 
-  useEffect(() => { load(); }, [filterEx]);
+  useEffect(() => { load(); }, [filterEx, userId]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("Remove this entry?")) return;
@@ -32,7 +35,12 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">History</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">History</h1>
+          <span className="text-xs font-mono px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold">
+            Athlete #{userId}
+          </span>
+        </div>
         <select
           value={filterEx}
           onChange={(e) => setFilterEx(e.target.value)}

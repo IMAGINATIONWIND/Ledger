@@ -1,9 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const rows = await query('SELECT * FROM category_breakdown');
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('user_id') || '101';
+
+    const rows = await query(
+      'SELECT * FROM category_breakdown WHERE user_id = $1',
+      [userId]
+    );
     return NextResponse.json(rows);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
